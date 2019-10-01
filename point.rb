@@ -28,7 +28,7 @@ class Point
   end
 
   def to_s
-    p "x: #{@x}, y: #{@y} "
+    "x: #{@x}, y: #{@y} "
   end
 
 end

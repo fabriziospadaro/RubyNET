@@ -3,6 +3,7 @@ require 'securerandom'
 
 class Server
   def initialize(socket_address, socket_port)
+    Thread.abort_on_exception = true
     @server_socket = TCPServer.open(socket_port, socket_address)
 
     @connections_details = {}
@@ -45,9 +46,10 @@ class Server
     # when we get a message from a client, propagate that message to all connected clients
     # except the sender
     loop do
-      data = conn.recvfrom(1024)[0]
-      listeners = @connections_details[:clients] - [conn]
-      broadcast_dirty(listeners, data)
+      data = conn.recvfrom(1024)[0].unpack('m*')[0]
+      p "Recived: #{data} at #{Time.now}"
+      listeners = @connections_details[:clients].values - [conn]
+      broadcast(listeners, data)
     end
   end
 
@@ -58,15 +60,8 @@ class Server
   def broadcast(clients, data)
     data = [data]
     [clients].flatten.each do |client|
-      p "wrote #{data.pack('m*')} to  #{client}"
+      p "wrote #{data} to  #{client} at #{Time.now}"
       client.write(data.pack('m*')) rescue nil
-    end
-  end
-
-  def broadcast_dirty(clients, data)
-    data = [data]
-    [clients].flatten.each do |client|
-      client.write(data)
     end
   end
 

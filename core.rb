@@ -54,7 +54,7 @@ threads << Thread.new do
     p "Sent a message"
   end
 
-  player.on :message_received do |sender_id, byte_data|
+  player.on :message_received do |netowrk_msg|
     p "Recived a message"
   end
 end

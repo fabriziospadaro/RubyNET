@@ -1,4 +1,5 @@
 require_relative 'events'
+require_relative 'network_message'
 
 class NetworkManager
   include Events
@@ -22,6 +23,7 @@ class NetworkManager
 
   def connect(client)
     @socket = TCPSocket.open(@ip, @port) rescue 'Connection failed'
+    client.socket = @socket
     @clients << client
     @local_client = client
   end
@@ -33,15 +35,6 @@ class NetworkManager
   def register_client(client)
     @clients << client
   end
-
-  #on_client_connected 02 ['client_id']
-
-  #on_client_disconnected 03 ['client_id']
-
-  #on_server_connected 04 ['assigned_client_id']
-
-  #on_server_closed 05 ['error']
-
 
   def dispatch(method:, args:)
     @local_client.send(method, *args)
@@ -56,7 +49,7 @@ class NetworkManager
       when '00'
         dispatch(method: :on_message_sent, args: [values[1]])
       when '01'
-        dispatch(method: :on_message_received, args: values[1..-1])
+        dispatch(method: :on_message_received, args: NetworkMessage.deserialize(values))
       when '02'
         on_client_connected(values[1])
       when '03'
